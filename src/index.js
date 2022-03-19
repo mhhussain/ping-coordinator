@@ -26,18 +26,20 @@ const hostname = uuidv4();
 var global_map = [];
 
 // STARTUP PROCESS
-const startup = () => {
+const startup = async () => {
   var i = 1;
   logger.info(`Running startup process`);
   const process = () => {
     logger.info(`Running process [${i++}]`);
     _.each(global_map, (v) => {
-      logger.info(`Testing host ${v.hostname}`);
-      axios.get(`${v.hostname}:${v.port}`)
+      const testhost = `http://${v.hostname}:${v.port}/${v.route}`;
+      logger.info(`Testing host [${testhost}]`);
+      axios.get(testhost)
         .then(res => {
           logger.info(`Host passed [${v.hostname}]`);
         })
         .catch(e => {
+          console.log(e.message);
           logger.info(`Host failed [${v.hostname}]`);
           global_map = _.filter(global_map, (o) => { return o.hostname != v.hostname; });
           logger.info(`Host removed [${v.hostname}]`);
@@ -45,7 +47,7 @@ const startup = () => {
     });
   };
 
-  const int = setInterval(process, 10000);
+  const int = setInterval(process, 1000);
 };
 
 // REGISTER ROUTES
@@ -54,7 +56,7 @@ app.post('/register', (req, res) => {
 
   if (_.find(global_map, (o) => { return o.hostname === registration.host; }) === undefined) {
     logger.info(`Registering host [[${registration.host}]]`);
-    global_map.push({ hostname: registration.host, port: registration.port });
+    global_map.push({ hostname: registration.host, port: registration.port, route: registration.route });
     res.json(true);
   } else {
     logger.info(`Host [[${registration.host}]] already registered`);

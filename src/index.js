@@ -29,32 +29,38 @@ var global_map = [];
 const startup = async () => {
   var i = 1;
   logger.info(`Running startup process`);
-  const process = () => {
+  const process = async () => {
+    // clone global map for loop safety
+    const gmap_clone = _.cloneDeep(global_map);
+    var new_gmap = [];
     logger.info(`Running process [${i++}]`);
-    _.each(global_map, (v) => {
+    await _.each(gmap_clone, async (v) => {
       const testhost = `http://${v.hostname}:${v.port}/${v.route}`;
       logger.info(`Testing host [${testhost}]`);
-      axios.get(testhost)
+      await axios.get(testhost)
         .then(res => {
           logger.info(`Host passed [${v.hostname}]`);
+          new_gmap.push(v);
         })
         .catch(e => {
           console.log(e.message);
           logger.info(`Host failed [${v.hostname}]`);
-          global_map = _.filter(global_map, (o) => { return o.hostname != v.hostname; });
+          //new_gmap = _.filter(gmap_clone, (o) => { return o.hostname != v.hostname; });
           logger.info(`Host removed [${v.hostname}]`);
         });
     });
+
+    global_map = new_gmap;
   };
 
-  const int = setInterval(process, 1000);
+  const int = await setInterval(process, 1000);
 };
 
 // REGISTER ROUTES
 app.post('/register', (req, res) => {
   const { registration } = req.body;
 
-  if (_.find(global_map, (o) => { return o.hostname === registration.host; }) === undefined) {
+  if (_.find(global_map, (o) => { return o.hostname == registration.host && o.port == registration.port; }) === undefined) {
     logger.info(`Registering host [[${registration.host}]]`);
     global_map.push({ hostname: registration.host, port: registration.port, route: registration.route });
     res.json(true);
@@ -67,7 +73,6 @@ app.post('/register', (req, res) => {
 app.get('/map', (req, res) => {
   res.json(global_map);
 });
-
 
 // ERRORS
 app.use((e, req, res, next) => {

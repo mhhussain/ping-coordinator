@@ -1,0 +1,31 @@
+---
+## pinger (d3)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-coordinator-deployment
+  labels:
+    app: ping-coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-coordinator
+  template:
+    metadata:
+      labels:
+        app: ping-coordinator
+    spec:
+      containers:
+      - name: ping-coordinator
+        image: moohh/ping-coordinator
+        imagePullPolicy: Always
+        env:
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: NAMESPACE
+          value: "mhussain"
+        - name: IN_KUBERNETES
+          value: "1"
+        ports:
+        - containerPort: 3000

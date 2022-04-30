@@ -1,9 +1,11 @@
 <template>
-  <div>
+  <div class="container flex-none border-2 rounded hover:border-4 hover:border-black">
     <div>Server [{{ index+1 }}]</div>
     <div>Hostname: {{ server.targetRef.name }}</div>
     <div>IP: {{ server.ip }}</div>
-    <div>Count: [{{ data.count }}]</div>
+    <div>
+      Count: <div class="ring-2 ring-blue-500">{{ data.count }}</div>
+    </div>
   </div>
 </template>
 

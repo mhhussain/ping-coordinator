@@ -13,7 +13,8 @@ export default data => {
       }
     );
   } else {
-    return Math.ceil(Math.random() * 100) > 50 ? DATA[0] : DATA[1];
+    //return Math.ceil(Math.random() * 100) > 50 ? DATA[0] : DATA[1];
+    return DATA[0];
   }
 };
 
